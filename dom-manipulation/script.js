@@ -66,6 +66,7 @@ function addQuote() {
     quotes.push({ text, category });
     saveQuotes();
     populateCategories();
+    postQuoteToServer({ text, category }); // send to mock API
     document.getElementById("quoteText").value = "";
     document.getElementById("quoteCategory").value = "";
     alert("Quote added successfully!");
@@ -84,7 +85,6 @@ function populateCategories() {
     option.textContent = cat;
     categoryFilter.appendChild(option);
   });
-  // Restore last selected filter
   const lastFilter = localStorage.getItem("lastSelectedCategory");
   if (lastFilter) {
     categoryFilter.value = lastFilter;
@@ -142,7 +142,6 @@ async function fetchQuotesFromServer() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
     const data = await response.json();
-    // Simulate converting server data into quotes
     return data.slice(0, 5).map(item => ({
       text: item.title,
       category: "Server"
@@ -153,10 +152,24 @@ async function fetchQuotesFromServer() {
   }
 }
 
+async function postQuoteToServer(quote) {
+  try {
+    await fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(quote)
+    });
+    console.log("Quote posted to server:", quote);
+  } catch (error) {
+    console.error("Error posting to server:", error);
+  }
+}
+
 async function syncQuotes() {
   const serverQuotes = await fetchQuotesFromServer();
   let updated = false;
 
+  // Conflict resolution: Add only quotes not already in local storage
   serverQuotes.forEach(sq => {
     if (!quotes.some(lq => lq.text === sq.text)) {
       quotes.push(sq);
@@ -168,6 +181,13 @@ async function syncQuotes() {
     saveQuotes();
     populateCategories();
     showNotification("Quotes updated from server.");
+  }
+
+  // Push any local quotes that the server doesn't have (mock check)
+  for (let lq of quotes) {
+    if (!serverQuotes.some(sq => sq.text === lq.text)) {
+      await postQuoteToServer(lq);
+    }
   }
 }
 
