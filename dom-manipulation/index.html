@@ -3,24 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dynamic Quote Generator with Filtering</title>
+  <title>Dynamic Quote Generator — Sync & Conflicts</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 20px; line-height: 1.45; }
+    #quoteDisplay { margin: 16px 0; font-size: 1.15rem; font-style: italic; }
+    select, input, button { padding: 8px; margin: 4px 4px 8px 0; }
+    #syncBar { display: flex; align-items: center; gap: 12px; margin: 10px 0 18px; }
+    #syncStatus { font-size: 0.95rem; opacity: 0.8; }
+    details { margin-top: 12px; }
+    .conflict { border: 1px solid #ddd; padding: 10px; border-radius: 6px; margin: 8px 0; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .muted { opacity: 0.8; font-size: 0.9rem; }
+    .tag { display: inline-block; padding: 2px 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.8rem; }
+  </style>
 </head>
 <body>
   <h1>Dynamic Quote Generator</h1>
 
+  <!-- Sync bar -->
+  <div id="syncBar">
+    <button id="syncNow">Sync Now</button>
+    <span id="syncStatus" class="muted">Idle.</span>
+    <span class="muted">Last sync: <span id="lastSyncAt">—</span></span>
+  </div>
+
   <!-- Category filter -->
-  <label for="categoryFilter">Select Category:</label>
+  <label for="categoryFilter">Category:</label>
   <select id="categoryFilter" onchange="filterQuotes()">
     <option value="all">All Categories</option>
-    <!-- categories will be populated dynamically -->
+    <!-- populated dynamically -->
   </select>
 
   <!-- Quote display -->
   <div id="quoteDisplay">Click "Show New Quote" to start.</div>
   <button id="newQuote">Show New Quote</button>
 
-  <!-- Add new quote form -->
+  <!-- Add new quote form (built dynamically in JS) -->
+  <h2>Add a Quote</h2>
   <div id="formContainer"></div>
+
+  <!-- Conflicts -->
+  <details id="conflictsPanel">
+    <summary>Conflicts (<span id="conflictCount">0</span>)</summary>
+    <div id="conflictList"></div>
+  </details>
 
   <script src="script.js"></script>
 </body>
