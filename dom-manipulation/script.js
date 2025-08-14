@@ -1,3 +1,4 @@
+// -------------------- INITIAL DATA --------------------
 let quotes = [
   { text: "The best way to get started is to quit talking and begin doing.", category: "Motivation" },
   { text: "Your time is limited, so don’t waste it living someone else’s life.", category: "Inspiration" },
@@ -5,12 +6,37 @@ let quotes = [
   { text: "Creativity is intelligence having fun.", category: "Creativity" }
 ];
 
+// -------------------- STORAGE FUNCTIONS --------------------
+function saveQuotes() {
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+}
+
+function loadQuotes() {
+  const stored = localStorage.getItem("quotes");
+  if (stored) {
+    quotes = JSON.parse(stored);
+  }
+}
+
+function saveLastViewedQuote(quote) {
+  sessionStorage.setItem("lastQuote", JSON.stringify(quote));
+}
+
+function loadLastViewedQuote() {
+  const last = sessionStorage.getItem("lastQuote");
+  if (last) {
+    const parsed = JSON.parse(last);
+    quoteDisplay.textContent = `"${parsed.text}" — ${parsed.category}`;
+  }
+}
+
+// -------------------- DOM ELEMENTS --------------------
 const quoteDisplay = document.getElementById("quoteDisplay");
 const categoryContainer = document.getElementById("categoryContainer");
 
-// Create dropdown for categories
+// -------------------- UI FUNCTIONS --------------------
 function updateCategoryDropdown() {
-  categoryContainer.innerHTML = ""; // clear old dropdown
+  categoryContainer.innerHTML = "";
   const select = document.createElement("select");
   select.id = "categoryFilter";
 
@@ -30,7 +56,6 @@ function updateCategoryDropdown() {
   categoryContainer.appendChild(select);
 }
 
-// Show a random quote
 function showRandomQuote() {
   const selectedCategory = document.getElementById("categoryFilter").value;
   let filteredQuotes = quotes;
@@ -46,10 +71,14 @@ function showRandomQuote() {
 
   const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
   const randomQuote = filteredQuotes[randomIndex];
+
   quoteDisplay.textContent = `"${randomQuote.text}" — ${randomQuote.category}`;
+
+  // Save last viewed in session storage
+  saveLastViewedQuote(randomQuote);
 }
 
-// Add a new quote
+// -------------------- ADD QUOTE --------------------
 function addQuote() {
   const text = document.getElementById("newQuoteText").value.trim();
   const category = document.getElementById("newQuoteCategory").value.trim();
@@ -60,6 +89,7 @@ function addQuote() {
   }
 
   quotes.push({ text, category });
+  saveQuotes();
   updateCategoryDropdown();
 
   document.getElementById("newQuoteText").value = "";
@@ -68,7 +98,6 @@ function addQuote() {
   alert("Quote added successfully!");
 }
 
-// ✅ Create Add Quote form dynamically
 function createAddQuoteForm() {
   const formContainer = document.getElementById("formContainer");
 
@@ -91,9 +120,46 @@ function createAddQuoteForm() {
   formContainer.appendChild(addButton);
 }
 
-// Event listener for "Show New Quote"
-document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+// -------------------- JSON IMPORT / EXPORT --------------------
+function exportToJsonFile() {
+  const blob = new Blob([JSON.stringify(quotes, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
 
-// Init
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quotes.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+  fileReader.onload = function(e) {
+    try {
+      const importedQuotes = JSON.parse(e.target.result);
+      if (Array.isArray(importedQuotes)) {
+        quotes.push(...importedQuotes);
+        saveQuotes();
+        updateCategoryDropdown();
+        alert("Quotes imported successfully!");
+      } else {
+        alert("Invalid JSON format.");
+      }
+    } catch {
+      alert("Error parsing JSON file.");
+    }
+  };
+  fileReader.readAsText(event.target.files[0]);
+}
+
+// -------------------- EVENT LISTENERS --------------------
+document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+document.getElementById("exportBtn").addEventListener("click", exportToJsonFile);
+document.getElementById("importFile").addEventListener("change", importFromJsonFile);
+
+// -------------------- INIT --------------------
+loadQuotes();
 updateCategoryDropdown();
 createAddQuoteForm();
+loadLastViewedQuote();
