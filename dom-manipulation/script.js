@@ -6,17 +6,13 @@ let quotes = [
   { text: "Creativity is intelligence having fun.", category: "Creativity" }
 ];
 
-// DOM elements
+// DOM references
 const quoteDisplay = document.getElementById("quoteDisplay");
 const categoryFilter = document.getElementById("categoryFilter");
-const newQuoteBtn = document.getElementById("newQuote");
-const addQuoteBtn = document.getElementById("addQuoteBtn");
 
-// Populate category dropdown dynamically
+// Populate category dropdown
 function updateCategoryDropdown() {
-  // Extract unique categories
   const categories = [...new Set(quotes.map(q => q.category))];
-  
   categoryFilter.innerHTML = `<option value="all">All</option>`;
   categories.forEach(cat => {
     const option = document.createElement("option");
@@ -29,8 +25,8 @@ function updateCategoryDropdown() {
 // Show random quote
 function showRandomQuote() {
   const selectedCategory = categoryFilter.value;
-  
   let filteredQuotes = quotes;
+
   if (selectedCategory !== "all") {
     filteredQuotes = quotes.filter(q => q.category === selectedCategory);
   }
@@ -41,29 +37,40 @@ function showRandomQuote() {
   }
 
   const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
-  quoteDisplay.textContent = `"${filteredQuotes[randomIndex].text}" — ${filteredQuotes[randomIndex].category}`;
+  const randomQuote = filteredQuotes[randomIndex];
+  quoteDisplay.textContent = `"${randomQuote.text}" — ${randomQuote.category}`;
 }
 
-// Add new quote dynamically
+// ✅ addQuote function: adds new quote & updates DOM
 function addQuote() {
-  const text = document.getElementById("newQuoteText").value.trim();
-  const category = document.getElementById("newQuoteCategory").value.trim();
+  const textInput = document.getElementById("newQuoteText");
+  const categoryInput = document.getElementById("newQuoteCategory");
+
+  const text = textInput.value.trim();
+  const category = categoryInput.value.trim();
 
   if (!text || !category) {
     alert("Please enter both a quote and a category.");
     return;
   }
 
+  // Add to array
   quotes.push({ text, category });
-  updateCategoryDropdown(); // refresh dropdown if new category is added
-  document.getElementById("newQuoteText").value = "";
-  document.getElementById("newQuoteCategory").value = "";
+
+  // Update dropdown if new category added
+  updateCategoryDropdown();
+
+  // Clear inputs
+  textInput.value = "";
+  categoryInput.value = "";
+
+  // Feedback
   alert("Quote added successfully!");
 }
 
-// Event listeners
-newQuoteBtn.addEventListener("click", showRandomQuote);
-addQuoteBtn.addEventListener("click", addQuote);
+// ✅ Event listeners
+document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+document.getElementById("addQuoteBtn").addEventListener("click", addQuote);
 
-// Initialize on load
+// Init
 updateCategoryDropdown();
